@@ -119,24 +119,28 @@ class GeminiRepositoryImpl @Inject constructor(
     }
 
     private fun mapToQuotaInfo(response: GeminiDto.QuotaResponse, tier: String?): QuotaInfo {
-        // Deduplicate: keep lowest remainingFraction per modelId
-        val deduped = response.buckets
-            .groupBy { it.modelId }
-            .mapValues { (_, buckets) -> buckets.minByOrNull { it.remainingFraction } ?: buckets.first() }
-            .values.toList()
-
-        // Sort: flash models first, then alphabetical
-        val sorted = deduped.sortedWith(compareBy<GeminiDto.QuotaBucket> {
-            if (it.modelId.contains("flash", ignoreCase = true)) 0 else 1
-        }.thenBy { it.modelId })
-
-        val windows = sorted.map { bucket ->
-            UsageWindow(
-                label = bucket.modelId,
-                utilization = 1.0 - bucket.remainingFraction, // remaining → used
-                resetsAt = bucket.resetTime?.let { parseInstant(it) }
-            )
+        // Group all buckets into "Flash" vs "Pro" categories
+        val groups = response.buckets.groupBy { bucket ->
+            if (bucket.modelId.contains("flash", ignoreCase = true)) "Flash" else "Pro"
         }
+
+        // Per group: worst-case utilization, earliest reset time
+        val windows = listOfNotNull(
+            groups["Pro"]?.let { buckets ->
+                UsageWindow(
+                    label = "Pro",
+                    utilization = buckets.maxOf { 1.0 - it.remainingFraction },
+                    resetsAt = buckets.mapNotNull { it.resetTime?.let { ts -> parseInstant(ts) } }.minOrNull()
+                )
+            },
+            groups["Flash"]?.let { buckets ->
+                UsageWindow(
+                    label = "Flash",
+                    utilization = buckets.maxOf { 1.0 - it.remainingFraction },
+                    resetsAt = buckets.mapNotNull { it.resetTime?.let { ts -> parseInstant(ts) } }.minOrNull()
+                )
+            }
+        )
 
         return QuotaInfo(
             service = AiService.GEMINI,

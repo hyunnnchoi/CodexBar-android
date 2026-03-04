@@ -37,7 +37,15 @@ class ClaudeRepositoryImpl @Inject constructor(
                 200 -> {
                     val body = response.body()
                         ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                    Result.Success(mapToQuotaInfo(body, workingCredential.rateLimitTier))
+                    val headerTier = extractTierFromHeaders(response)
+                    val effectiveTier = headerTier ?: workingCredential.rateLimitTier
+                    if (headerTier != null && headerTier != workingCredential.rateLimitTier) {
+                        prefsManager.saveCredential(
+                            AiService.CLAUDE,
+                            workingCredential.copy(rateLimitTier = headerTier)
+                        )
+                    }
+                    Result.Success(mapToQuotaInfo(body, effectiveTier))
                 }
                 401 -> {
                     // Try refresh once, then retry
@@ -47,7 +55,15 @@ class ClaudeRepositoryImpl @Inject constructor(
                         if (retryResponse.isSuccessful) {
                             val body = retryResponse.body()
                                 ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                            Result.Success(mapToQuotaInfo(body, refreshed.rateLimitTier))
+                            val headerTier = extractTierFromHeaders(retryResponse)
+                            val effectiveTier = headerTier ?: refreshed.rateLimitTier
+                            if (headerTier != null && headerTier != refreshed.rateLimitTier) {
+                                prefsManager.saveCredential(
+                                    AiService.CLAUDE,
+                                    refreshed.copy(rateLimitTier = headerTier)
+                                )
+                            }
+                            Result.Success(mapToQuotaInfo(body, effectiveTier))
                         } else {
                             Result.Failure(AppError.AuthError(AiService.CLAUDE, isTerminal = true))
                         }
@@ -104,6 +120,13 @@ class ClaudeRepositoryImpl @Inject constructor(
         } catch (_: Exception) {
             null
         }
+    }
+
+    private fun extractTierFromHeaders(response: retrofit2.Response<*>): String? {
+        val raw = response.headers()["anthropic-ratelimit-tier"]
+            ?: response.headers()["x-ratelimit-tier"]
+            ?: return null
+        return raw.trim().replaceFirstChar { it.uppercase() }
     }
 
     private fun mapToQuotaInfo(response: ClaudeDto.OAuthUsageResponse, tier: String? = null): QuotaInfo {

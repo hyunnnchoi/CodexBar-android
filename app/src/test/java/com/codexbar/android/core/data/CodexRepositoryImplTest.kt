@@ -108,7 +108,7 @@ class CodexRepositoryImplTest {
         assertEquals(0.45, quotaInfo.windows[0].utilization, 0.001)
         assertEquals("7-Day", quotaInfo.windows[1].label)
         assertEquals(0.20, quotaInfo.windows[1].utilization, 0.001)
-        assertEquals("pro", quotaInfo.tier)
+        assertEquals("Pro", quotaInfo.tier)
     }
 
     @Test

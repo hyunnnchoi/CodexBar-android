@@ -101,9 +101,11 @@ class GeminiRepositoryImplTest {
         assertEquals(AiService.GEMINI, quotaInfo.service)
         assertEquals("Free", quotaInfo.tier)
         assertEquals(2, quotaInfo.windows.size)
-        // flash should come first
-        assertEquals("gemini-2.0-flash", quotaInfo.windows[0].label)
-        assertEquals(0.27, quotaInfo.windows[0].utilization, 0.01)
+        // Pro first, then Flash
+        assertEquals("Pro", quotaInfo.windows[0].label)
+        assertEquals(0.50, quotaInfo.windows[0].utilization, 0.01)
+        assertEquals("Flash", quotaInfo.windows[1].label)
+        assertEquals(0.27, quotaInfo.windows[1].utilization, 0.01)
     }
 
     @Test
@@ -160,9 +162,12 @@ class GeminiRepositoryImplTest {
         assertTrue(result is Result.Success)
         val quotaInfo = (result as Result.Success).value
         assertEquals(2, quotaInfo.windows.size)
-        // Should keep lowest remainingFraction (0.30) for flash → utilization = 0.70
-        val flashWindow = quotaInfo.windows.first { it.label == "gemini-2.0-flash" }
+        // Flash group: max(1-0.80, 1-0.30) = max(0.20, 0.70) = 0.70
+        val flashWindow = quotaInfo.windows.first { it.label == "Flash" }
         assertEquals(0.70, flashWindow.utilization, 0.01)
+        // Pro group: max(1-0.60) = 0.40
+        val proWindow = quotaInfo.windows.first { it.label == "Pro" }
+        assertEquals(0.40, proWindow.utilization, 0.01)
     }
 
     @Test

@@ -118,7 +118,7 @@ class CodexRepositoryImpl @Inject constructor(
             service = AiService.CODEX,
             windows = windows,
             extraUsage = null,
-            tier = response.planType,
+            tier = response.planType?.replaceFirstChar { it.uppercase() },
             fetchedAt = Instant.now()
         )
     }

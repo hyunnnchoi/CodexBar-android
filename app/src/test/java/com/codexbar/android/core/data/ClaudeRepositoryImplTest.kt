@@ -75,12 +75,12 @@ class ClaudeRepositoryImplTest {
     fun `fetchQuota returns success with all windows`() = runTest {
         val responseJson = """
         {
-            "five_hour": { "utilization": 0.42, "resets_at": "2025-06-01T12:00:00Z" },
-            "seven_day": { "utilization": 0.15, "resets_at": "2025-06-07T00:00:00Z" },
-            "seven_day_oauth_apps": { "utilization": 0.10 },
-            "seven_day_opus": { "utilization": 0.30 },
-            "seven_day_sonnet": { "utilization": 0.20 },
-            "iguana_necktie": { "utilization": 0.05 },
+            "five_hour": { "utilization": 42, "resets_at": "2025-06-01T12:00:00Z" },
+            "seven_day": { "utilization": 15, "resets_at": "2025-06-07T00:00:00Z" },
+            "seven_day_oauth_apps": { "utilization": 10 },
+            "seven_day_opus": { "utilization": 30 },
+            "seven_day_sonnet": { "utilization": 20 },
+            "iguana_necktie": { "utilization": 5 },
             "extra_usage": {
                 "is_enabled": true,
                 "monthly_limit": 50.0,
@@ -112,8 +112,8 @@ class ClaudeRepositoryImplTest {
     fun `fetchQuota handles response without iguana_necktie`() = runTest {
         val responseJson = """
         {
-            "five_hour": { "utilization": 0.42 },
-            "seven_day": { "utilization": 0.15 }
+            "five_hour": { "utilization": 42 },
+            "seven_day": { "utilization": 15 }
         }
         """.trimIndent()
 
@@ -162,10 +162,53 @@ class ClaudeRepositoryImplTest {
     }
 
     @Test
+    fun `fetchQuota extracts tier from response headers`() = runTest {
+        val responseJson = """
+        {
+            "five_hour": { "utilization": 42 }
+        }
+        """.trimIndent()
+
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(responseJson)
+                .addHeader("anthropic-ratelimit-tier", "pro")
+        )
+
+        val result = repository.fetchQuota()
+
+        assertTrue(result is Result.Success)
+        val quotaInfo = (result as Result.Success).value
+        assertEquals("Pro", quotaInfo.tier)
+    }
+
+    @Test
+    fun `fetchQuota extracts tier from x-ratelimit-tier fallback header`() = runTest {
+        val responseJson = """
+        {
+            "five_hour": { "utilization": 10 }
+        }
+        """.trimIndent()
+
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(responseJson)
+                .addHeader("x-ratelimit-tier", "free")
+        )
+
+        val result = repository.fetchQuota()
+
+        assertTrue(result is Result.Success)
+        assertEquals("Free", (result as Result.Success).value.tier)
+    }
+
+    @Test
     fun `fetchQuota extra_usage null when disabled`() = runTest {
         val responseJson = """
         {
-            "five_hour": { "utilization": 0.42 },
+            "five_hour": { "utilization": 42 },
             "extra_usage": { "is_enabled": false, "monthly_limit": 0, "used_credits": 0, "utilization": 0, "currency": "USD" }
         }
         """.trimIndent()
