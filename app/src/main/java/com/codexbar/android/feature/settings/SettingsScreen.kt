@@ -84,6 +84,12 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Notifications
+            NotificationsSection(
+                enabled = uiState.notificationsEnabled,
+                onToggle = { viewModel.setNotificationsEnabled(it) }
+            )
+
             // Service credential sections
             AiService.entries.forEach { service ->
                 val state = uiState.serviceStates[service] ?: ServiceCredentialState()
@@ -99,12 +105,6 @@ fun SettingsScreen(
             RefreshIntervalSection(
                 currentMinutes = uiState.refreshIntervalMinutes,
                 onIntervalChange = { viewModel.setRefreshInterval(it) }
-            )
-
-            // Notifications
-            NotificationsSection(
-                enabled = uiState.notificationsEnabled,
-                onToggle = { viewModel.setNotificationsEnabled(it) }
             )
 
             // Danger zone
