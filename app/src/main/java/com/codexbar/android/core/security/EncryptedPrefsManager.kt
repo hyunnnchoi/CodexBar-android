@@ -133,6 +133,14 @@ class EncryptedPrefsManager @Inject constructor(
         prefs.edit().putLong("refresh_interval_minutes", minutes).apply()
     }
 
+    fun isNotificationsEnabled(): Boolean {
+        return prefs.getBoolean("notifications_enabled", true)
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("notifications_enabled", enabled).apply()
+    }
+
     fun saveResetTimes(service: AiService, windows: List<Pair<String, Instant?>>) {
         val editor = prefs.edit()
         windows.forEach { (label, resetsAt) ->

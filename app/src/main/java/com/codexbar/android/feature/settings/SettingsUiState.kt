@@ -7,6 +7,7 @@ data class SettingsUiState(
         ServiceCredentialState()
     },
     val refreshIntervalMinutes: Long = 30L,
+    val notificationsEnabled: Boolean = true,
     val showDeleteConfirmDialog: Boolean = false
 )
 

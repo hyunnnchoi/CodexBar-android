@@ -41,7 +41,12 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadSavedCredentials()
-        _uiState.update { it.copy(refreshIntervalMinutes = prefsManager.getRefreshInterval()) }
+        _uiState.update {
+            it.copy(
+                refreshIntervalMinutes = prefsManager.getRefreshInterval(),
+                notificationsEnabled = prefsManager.isNotificationsEnabled()
+            )
+        }
         observePendingChanges()
     }
 
@@ -176,6 +181,11 @@ class SettingsViewModel @Inject constructor(
     fun setRefreshInterval(minutes: Long) {
         prefsManager.setRefreshInterval(minutes)
         _uiState.update { it.copy(refreshIntervalMinutes = minutes) }
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        prefsManager.setNotificationsEnabled(enabled)
+        _uiState.update { it.copy(notificationsEnabled = enabled) }
     }
 
     fun showDeleteConfirmDialog() {

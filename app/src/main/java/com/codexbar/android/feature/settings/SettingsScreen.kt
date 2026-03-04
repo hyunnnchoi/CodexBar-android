@@ -37,6 +37,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -98,6 +99,12 @@ fun SettingsScreen(
             RefreshIntervalSection(
                 currentMinutes = uiState.refreshIntervalMinutes,
                 onIntervalChange = { viewModel.setRefreshInterval(it) }
+            )
+
+            // Notifications
+            NotificationsSection(
+                enabled = uiState.notificationsEnabled,
+                onToggle = { viewModel.setNotificationsEnabled(it) }
             )
 
             // Danger zone
@@ -299,6 +306,42 @@ private fun RefreshIntervalSection(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun NotificationsSection(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Notifications",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Quota status and reset alerts",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle
+            )
         }
     }
 }

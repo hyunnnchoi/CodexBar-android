@@ -58,7 +58,7 @@ class QuotaRefreshWorker @AssistedInject constructor(
                 }
             }
 
-            if (successfulQuotas.isNotEmpty()) {
+            if (successfulQuotas.isNotEmpty() && prefsManager.isNotificationsEnabled()) {
                 notificationService.showQuotaNotification(successfulQuotas)
                 checkForResets(successfulQuotas)
             }
