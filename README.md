@@ -5,14 +5,14 @@
 Monitor your AI service quotas from your Android device. Track remaining usage for Claude, Codex (ChatGPT), and Gemini in one place.
 
 <p align="center">
-  <img src="docs/Screenshot_20260305_013651_CodexBar.jpg" width="270" alt="Dashboard" />
+  <img src="docs/Screenshot_20260305_020739_CodexBar.jpg" width="270" alt="Dashboard" />
   &nbsp;&nbsp;
-  <img src="docs/Screenshot_20260305_013700_CodexBar.jpg" width="270" alt="Settings" />
+  <img src="docs/Screenshot_20260305_020743_CodexBar.jpg" width="270" alt="Settings" />
 </p>
 
 ## Features
 
-- Real-time quota monitoring for Claude, Codex, and Gemini
+- Real-time quota monitoring for Claude, Codex, and Gemini (more services coming soon)
 - Animated gauge bars showing remaining usage percentage
 - Quick Settings tile for at-a-glance status
 - Background refresh with configurable intervals
@@ -23,7 +23,12 @@ Monitor your AI service quotas from your Android device. Track remaining usage f
 
 ## Download
 
-Pre-built APKs are available on the [Releases](https://github.com/hyunnnchoi/codexbar-android/releases) page. I do systems software for a living — I'm not smart enough to sneak viruses into an Android app.
+Pre-built APKs are available on the [Releases](https://github.com/hyunnnchoi/codexbar-android/releases) page. 
+
+I do **system software** for a living — I'm not smart enough to sneak viruses into an Android app. 
+
+No backend server — all tokens are processed and stored strictly on-device. 
+
 
 ## Setup
 
