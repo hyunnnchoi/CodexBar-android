@@ -23,7 +23,7 @@ Monitor your AI service quotas from your Android device. Track remaining usage f
 
 ## Download
 
-Pre-built APKs are available on the [Releases](https://github.com/nickhyunnnchoi/codexbar-android/releases) page. I do systems software for a living — I'm not smart enough to sneak viruses into an Android app.
+Pre-built APKs are available on the [Releases](https://github.com/hyunnnchoi/codexbar-android/releases) page. I do systems software for a living — I'm not smart enough to sneak viruses into an Android app.
 
 ## Setup
 
