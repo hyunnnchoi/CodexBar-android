@@ -26,9 +26,10 @@ Pre-built APKs are available on the [Releases](https://github.com/nickhyunnnchoi
 
 ## Setup
 
-1. Clone and open in Android Studio
-2. Build and install the debug APK
-3. Open the app and go to **Settings** to enter your API tokens
+1. Install [OpenJDK 17](https://formulae.brew.sh/formula/openjdk@17) (or any JDK 17+)
+2. Clone and open in Android Studio
+3. Build and install the debug APK
+4. Open the app and go to **Settings** to enter your API tokens
 
 ## Getting Your Tokens
 
