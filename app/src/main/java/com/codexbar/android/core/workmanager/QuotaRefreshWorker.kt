@@ -22,6 +22,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import java.time.Instant
 
 @HiltWorker
 class QuotaRefreshWorker @AssistedInject constructor(
@@ -59,6 +60,7 @@ class QuotaRefreshWorker @AssistedInject constructor(
 
             if (successfulQuotas.isNotEmpty()) {
                 notificationService.showQuotaNotification(successfulQuotas)
+                checkForResets(successfulQuotas)
             }
 
             // Request tile update
@@ -74,6 +76,27 @@ class QuotaRefreshWorker @AssistedInject constructor(
             }
         } catch (_: Exception) {
             Result.retry()
+        }
+    }
+
+    private fun checkForResets(quotas: List<QuotaInfo>) {
+        val now = Instant.now()
+        for (quota in quotas) {
+            val previousResetTimes = prefsManager.loadResetTimes(quota.service)
+
+            // Detect resets: previous resetsAt was in the future, now it's in the past
+            for (window in quota.windows) {
+                val previousResetAt = previousResetTimes[window.label] ?: continue
+                if (previousResetAt.isBefore(now) && window.resetsAt != null && window.resetsAt.isAfter(now)) {
+                    notificationService.showResetNotification(quota.service, window.label)
+                }
+            }
+
+            // Save current reset times for next comparison
+            prefsManager.saveResetTimes(
+                quota.service,
+                quota.windows.map { it.label to it.resetsAt }
+            )
         }
     }
 
