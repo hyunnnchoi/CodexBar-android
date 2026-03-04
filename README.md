@@ -41,17 +41,61 @@ Paste the resulting token into the Claude access token field in Settings.
 
 ### Codex (OpenAI / ChatGPT)
 
+If you have the [Codex CLI](https://github.com/openai/codex) installed and logged in, extract tokens from `~/.codex/auth.json`:
+
+```bash
+# Access token
+cat ~/.codex/auth.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['tokens']['access_token'])"
+
+# Refresh token
+cat ~/.codex/auth.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['tokens']['refresh_token'])"
+```
+
+Paste both into the Codex fields in Settings.
+
+<details>
+<summary>Alternative: Extract from browser (if CLI is not installed)</summary>
+
 1. Open [chatgpt.com](https://chatgpt.com) in your browser
 2. Open DevTools (F12) > Network tab
 3. Look for requests to `https://chatgpt.com/backend-api/`
 4. Copy the `Authorization: Bearer ...` token from request headers
 
+</details>
+
 ### Gemini (Google)
+
+If you have the [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and logged in, extract tokens from `~/.gemini/oauth_creds.json`:
+
+```bash
+# Access token
+cat ~/.gemini/oauth_creds.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['access_token'])"
+
+# Refresh token
+cat ~/.gemini/oauth_creds.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['refresh_token'])"
+```
+
+The OAuth client ID and secret are also needed for token refresh. Extract from the Gemini CLI installation:
+
+```bash
+# Find oauth2.js and extract client credentials
+gemini_path=$(which gemini)
+oauth_js="$(dirname "$gemini_path")/../lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/code_assist/oauth2.js"
+grep -oP "OAUTH_CLIENT_ID\s*=\s*['\"]\\K[^'\"]*" "$oauth_js"
+grep -oP "OAUTH_CLIENT_SECRET\s*=\s*['\"]\\K[^'\"]*" "$oauth_js"
+```
+
+Paste all four values into the Gemini fields in Settings.
+
+<details>
+<summary>Alternative: Extract from browser (if CLI is not installed)</summary>
 
 1. Open [gemini.google.com](https://gemini.google.com) in your browser
 2. Open DevTools > Network tab
 3. Find requests containing `batchexecute` or similar API calls
 4. Copy the OAuth token from the `Authorization` header
+
+</details>
 
 ## Build
 
