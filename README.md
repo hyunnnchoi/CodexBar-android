@@ -65,37 +65,30 @@ Paste both into the Codex fields in Settings.
 
 ### Gemini (Google)
 
-If you have the [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and logged in, extract tokens from `~/.gemini/oauth_creds.json`:
+Gemini requires **4 values**: access token, refresh token, OAuth client ID, and OAuth client secret. The client ID/secret are needed because Gemini uses Google OAuth for token refresh.
+
+If you have the [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and logged in:
 
 ```bash
-# Access token
-cat ~/.gemini/oauth_creds.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['access_token'])"
+# 1. Access token
+python3 -c "import json; print(json.load(open('$HOME/.gemini/oauth_creds.json'))['access_token'])"
 
-# Refresh token
-cat ~/.gemini/oauth_creds.json | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['refresh_token'])"
-```
+# 2. Refresh token
+python3 -c "import json; print(json.load(open('$HOME/.gemini/oauth_creds.json'))['refresh_token'])"
 
-The OAuth client ID and secret are also needed for token refresh. Extract from the Gemini CLI installation:
-
-```bash
-# Find oauth2.js and extract client credentials
-gemini_path=$(which gemini)
-oauth_js="$(dirname "$gemini_path")/../lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/code_assist/oauth2.js"
-grep -oP "OAUTH_CLIENT_ID\s*=\s*['\"]\\K[^'\"]*" "$oauth_js"
-grep -oP "OAUTH_CLIENT_SECRET\s*=\s*['\"]\\K[^'\"]*" "$oauth_js"
+# 3. OAuth Client ID & Secret (from Gemini CLI source)
+oauth_js="$(dirname "$(which gemini)")/../lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/code_assist/oauth2.js"
+python3 -c "
+import re, sys
+text = open('$oauth_js').read()
+cid = re.search(r\"OAUTH_CLIENT_ID\s*=\s*'([^']+)'\", text)
+sec = re.search(r\"OAUTH_CLIENT_SECRET\s*=\s*'([^']+)'\", text)
+print('Client ID:', cid.group(1) if cid else 'not found')
+print('Client Secret:', sec.group(1) if sec else 'not found')
+"
 ```
 
 Paste all four values into the Gemini fields in Settings.
-
-<details>
-<summary>Alternative: Extract from browser (if CLI is not installed)</summary>
-
-1. Open [gemini.google.com](https://gemini.google.com) in your browser
-2. Open DevTools > Network tab
-3. Find requests containing `batchexecute` or similar API calls
-4. Copy the OAuth token from the `Authorization` header
-
-</details>
 
 ## Build
 
