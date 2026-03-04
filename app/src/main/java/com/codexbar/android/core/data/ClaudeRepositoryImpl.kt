@@ -37,7 +37,7 @@ class ClaudeRepositoryImpl @Inject constructor(
                 200 -> {
                     val body = response.body()
                         ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                    Result.Success(mapToQuotaInfo(body))
+                    Result.Success(mapToQuotaInfo(body, workingCredential.rateLimitTier))
                 }
                 401 -> {
                     // Try refresh once, then retry
@@ -47,7 +47,7 @@ class ClaudeRepositoryImpl @Inject constructor(
                         if (retryResponse.isSuccessful) {
                             val body = retryResponse.body()
                                 ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                            Result.Success(mapToQuotaInfo(body))
+                            Result.Success(mapToQuotaInfo(body, refreshed.rateLimitTier))
                         } else {
                             Result.Failure(AppError.AuthError(AiService.CLAUDE, isTerminal = true))
                         }
@@ -106,7 +106,7 @@ class ClaudeRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun mapToQuotaInfo(response: ClaudeDto.OAuthUsageResponse): QuotaInfo {
+    private fun mapToQuotaInfo(response: ClaudeDto.OAuthUsageResponse, tier: String? = null): QuotaInfo {
         val windows = buildList {
             response.fiveHour?.let { add(mapWindow("5-Hour", it)) }
             response.sevenDay?.let { add(mapWindow("7-Day", it)) }
@@ -130,6 +130,7 @@ class ClaudeRepositoryImpl @Inject constructor(
             service = AiService.CLAUDE,
             windows = windows,
             extraUsage = extraUsage,
+            tier = tier,
             fetchedAt = Instant.now()
         )
     }
