@@ -20,6 +20,10 @@ Monitor your AI service quotas from your Android device. Track remaining usage f
 - Encrypted credential storage
 - Material 3 with Dynamic Color
 
+## Download
+
+Pre-built APKs are available on the [Releases](https://github.com/nickhyunnnchoi/codexbar-android/releases) page. I do systems software for a living — I'm not smart enough to sneak viruses into an Android app.
+
 ## Setup
 
 1. Clone and open in Android Studio
