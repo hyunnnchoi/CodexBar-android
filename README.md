@@ -17,6 +17,7 @@ Monitor your AI service quotas from your Android device. Track remaining usage f
 - Quick Settings tile for at-a-glance status
 - Background refresh with configurable intervals
 - Persistent notification with per-service breakdown
+- Push alert when quota resets (fully replenished)
 - Encrypted credential storage
 - Material 3 with Dynamic Color
 
