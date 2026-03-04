@@ -33,45 +33,62 @@ class GeminiRepositoryImpl @Inject constructor(
             ?: return Result.Failure(AppError.AuthError(AiService.GEMINI, isTerminal = true))
 
         return try {
-            // Step 1: loadCodeAssist to get projectId and tier
-            val loadResponse = apiService.loadCodeAssist(
-                authorization = "Bearer ${workingCredential.accessToken}",
-                body = GeminiDto.LoadCodeAssistRequest()
-            )
-
-            if (!loadResponse.isSuccessful) {
-                return handleErrorResponse(loadResponse.code())
+            val result = fetchQuotaWithToken(workingCredential)
+            if (result is Result.Failure && result.error is AppError.AuthError) {
+                // Token might be expired despite expiresAtMs — try refresh once
+                val refreshed = refreshToken(workingCredential)
+                if (refreshed != null) {
+                    fetchQuotaWithToken(refreshed)
+                } else {
+                    Result.Failure(AppError.AuthError(AiService.GEMINI, isTerminal = true))
+                }
+            } else {
+                result
             }
-
-            val loadBody = loadResponse.body()
-                ?: return Result.Failure(AppError.ParseError("Empty loadCodeAssist response"))
-
-            val projectId = extractProjectId(loadBody)
-            val tierRaw = loadBody.currentTier?.id
-            val tier = mapTier(tierRaw)
-
-            // Step 2: retrieveUserQuota
-            val quotaRequest = GeminiDto.RetrieveUserQuotaRequest(
-                project = projectId ?: ""
-            )
-            val quotaResponse = apiService.retrieveUserQuota(
-                authorization = "Bearer ${workingCredential.accessToken}",
-                body = quotaRequest
-            )
-
-            if (!quotaResponse.isSuccessful) {
-                return handleErrorResponse(quotaResponse.code())
-            }
-
-            val quotaBody = quotaResponse.body()
-                ?: return Result.Failure(AppError.ParseError("Empty quota response"))
-
-            Result.Success(mapToQuotaInfo(quotaBody, tier))
         } catch (e: IOException) {
             Result.Failure(AppError.NetworkError(e.message ?: "Network error", e))
         } catch (e: Exception) {
-            Result.Failure(AppError.ParseError(e.message ?: "Parse error", e))
+            Result.Failure(AppError.ParseError("${e::class.simpleName}: ${e.message}", e))
         }
+    }
+
+    private suspend fun fetchQuotaWithToken(
+        credential: Credential.GeminiCredential
+    ): Result<QuotaInfo, AppError> {
+        // Step 1: loadCodeAssist to get projectId and tier
+        val loadResponse = apiService.loadCodeAssist(
+            authorization = "Bearer ${credential.accessToken}",
+            body = GeminiDto.LoadCodeAssistRequest()
+        )
+
+        if (!loadResponse.isSuccessful) {
+            return handleErrorResponse(loadResponse.code())
+        }
+
+        val loadBody = loadResponse.body()
+            ?: return Result.Failure(AppError.ParseError("Empty loadCodeAssist response"))
+
+        val projectId = extractProjectId(loadBody)
+        val tierRaw = loadBody.currentTier?.id
+        val tier = mapTier(tierRaw)
+
+        // Step 2: retrieveUserQuota
+        val quotaRequest = GeminiDto.RetrieveUserQuotaRequest(
+            project = projectId ?: ""
+        )
+        val quotaResponse = apiService.retrieveUserQuota(
+            authorization = "Bearer ${credential.accessToken}",
+            body = quotaRequest
+        )
+
+        if (!quotaResponse.isSuccessful) {
+            return handleErrorResponse(quotaResponse.code())
+        }
+
+        val quotaBody = quotaResponse.body()
+            ?: return Result.Failure(AppError.ParseError("Empty quota response"))
+
+        return Result.Success(mapToQuotaInfo(quotaBody, tier))
     }
 
     override suspend fun validateCredential(): Result<Unit, AppError> {

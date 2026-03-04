@@ -7,13 +7,13 @@ import retrofit2.http.POST
 
 interface GeminiApiService {
 
-    @POST("v1internal:loadCodeAssist")
+    @POST("./v1internal:loadCodeAssist")
     suspend fun loadCodeAssist(
         @Header("Authorization") authorization: String,
         @Body body: GeminiDto.LoadCodeAssistRequest
     ): Response<GeminiDto.LoadCodeAssistResponse>
 
-    @POST("v1internal:retrieveUserQuota")
+    @POST("./v1internal:retrieveUserQuota")
     suspend fun retrieveUserQuota(
         @Header("Authorization") authorization: String,
         @Body body: GeminiDto.RetrieveUserQuotaRequest

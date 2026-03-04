@@ -148,7 +148,7 @@ private fun formatError(error: AppError): String {
         is AppError.NetworkError -> "Network error"
         is AppError.AuthError -> if (error.isTerminal) "Re-authentication required" else "Auth error"
         is AppError.RateLimited -> "Rate limited"
-        is AppError.ParseError -> "Response parse error"
+        is AppError.ParseError -> error.message ?: "Response parse error"
         is AppError.CredentialNotFound -> "No credentials configured"
         is AppError.ServiceUnavailable -> "Service unavailable"
     }

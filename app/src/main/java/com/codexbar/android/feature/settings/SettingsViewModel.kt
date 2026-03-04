@@ -211,7 +211,7 @@ class SettingsViewModel @Inject constructor(
             is AppError.NetworkError -> "Network error: ${error.message}"
             is AppError.AuthError -> if (error.isTerminal) "Authentication failed (re-login required)" else "Authentication error"
             is AppError.RateLimited -> "Rate limited — try again later"
-            is AppError.ParseError -> "Unexpected response format"
+            is AppError.ParseError -> "Parse error: ${error.message}"
             is AppError.CredentialNotFound -> "No credentials saved"
             is AppError.ServiceUnavailable -> "Service temporarily unavailable"
         }
