@@ -4,6 +4,12 @@
 
 Monitor your AI service quotas from your Android device. Track remaining usage for Claude, Codex (ChatGPT), and Gemini in one place.
 
+<p align="center">
+  <img src="docs/Screenshot_20260304_225055_CodexBar.jpg" width="270" alt="Dashboard" />
+  &nbsp;&nbsp;
+  <img src="docs/Screenshot_20260304_225045_CodexBar.jpg" width="270" alt="Settings" />
+</p>
+
 ## Features
 
 - Real-time quota monitoring for Claude, Codex, and Gemini
