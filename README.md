@@ -1,8 +1,8 @@
 # CodexBar for Android
 
-Monitor your AI service quotas from your Android device. Track remaining usage for Claude, Codex (ChatGPT), and Gemini in one place.
+> Android port of [**CodexBar**](https://github.com/steipete/CodexBar) by [@steipete](https://github.com/steipete) — the macOS menu bar app for monitoring AI service quotas.
 
-Android port of [CodexBar](https://github.com/steipete/CodexBar) (macOS).
+Monitor your AI service quotas from your Android device. Track remaining usage for Claude, Codex (ChatGPT), and Gemini in one place.
 
 ## Features
 
