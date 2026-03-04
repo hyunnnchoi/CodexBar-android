@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.yourname.aiquota"
+    namespace = "com.codexbar.android"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.yourname.aiquota"
+        applicationId = "com.codexbar.android"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

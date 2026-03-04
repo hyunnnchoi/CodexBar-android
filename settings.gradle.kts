@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AiQuota"
+rootProject.name = "CodexBar"
 include(":app")

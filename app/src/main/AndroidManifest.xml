@@ -11,20 +11,20 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
-        android:name=".AiQuotaApplication"
+        android:name=".CodexBarApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AiQuota"
+        android:theme="@style/Theme.CodexBar"
         tools:targetApi="35">
 
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AiQuota">
+            android:theme="@style/Theme.CodexBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -35,8 +35,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="aiquota" android:host="dashboard" />
-                <data android:scheme="aiquota" android:host="settings" />
+                <data android:scheme="codexbar" android:host="dashboard" />
+                <data android:scheme="codexbar" android:host="settings" />
             </intent-filter>
         </activity>
 
@@ -57,7 +57,7 @@
             android:name=".core.notification.RefreshReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.yourname.aiquota.ACTION_REFRESH" />
+                <action android:name="com.codexbar.android.ACTION_REFRESH" />
             </intent-filter>
         </receiver>
 
@@ -77,7 +77,7 @@
             android:exported="false"
             tools:node="merge">
             <meta-data
-                android:name="com.yourname.aiquota.core.workmanager.WorkManagerInitializer"
+                android:name="com.codexbar.android.core.workmanager.WorkManagerInitializer"
                 android:value="androidx.startup" />
         </provider>
 

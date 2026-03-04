@@ -9,11 +9,11 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
--keep,includedescriptorclasses class com.yourname.aiquota.**$$serializer { *; }
--keepclassmembers class com.yourname.aiquota.** {
+-keep,includedescriptorclasses class com.codexbar.android.**$$serializer { *; }
+-keepclassmembers class com.codexbar.android.** {
     *** Companion;
 }
--keepclasseswithmembers class com.yourname.aiquota.** {
+-keepclasseswithmembers class com.codexbar.android.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -31,7 +31,7 @@
 -keep class okhttp3.** { *; }
 
 # Keep Retrofit service interfaces
--keep,allowobfuscation interface com.yourname.aiquota.core.network.** {
+-keep,allowobfuscation interface com.codexbar.android.core.network.** {
     <methods>;
 }
 
