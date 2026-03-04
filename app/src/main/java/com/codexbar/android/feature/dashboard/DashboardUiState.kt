@@ -31,7 +31,8 @@ data class ServiceCardData(
 
 data class UsageWindowUi(
     val label: String,
-    val utilization: Double
+    val utilization: Double,
+    val resetsAt: Instant? = null
 )
 
 data class ExtraUsageUi(

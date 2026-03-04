@@ -106,7 +106,8 @@ fun ServiceCard(
                 QuotaGaugeBar(
                     utilization = window.utilization,
                     label = window.label,
-                    showPercentage = true
+                    showPercentage = true,
+                    resetsAt = window.resetsAt
                 )
             }
 
@@ -124,7 +125,8 @@ fun ServiceCard(
                         QuotaGaugeBar(
                             utilization = window.utilization,
                             label = window.label,
-                            showPercentage = true
+                            showPercentage = true,
+                            resetsAt = window.resetsAt
                         )
                     }
                 }

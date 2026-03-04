@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,8 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.Duration
+import java.time.Instant
 
 private val AmberWarning = Color(0xFFFFC107)
 
@@ -37,6 +41,7 @@ fun QuotaGaugeBar(
     utilization: Double,
     label: String? = null,
     showPercentage: Boolean = true,
+    resetsAt: Instant? = null,
     modifier: Modifier = Modifier
 ) {
     val remaining = (1.0 - utilization).coerceIn(0.0, 1.0)
@@ -60,46 +65,74 @@ fun QuotaGaugeBar(
         label = "gauge_color"
     )
 
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (label != null) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(72.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
+    val resetText = resetsAt?.let { formatResetTime(it) }
 
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(8.dp)
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            if (label != null) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(72.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(animatedProgress)
+                    .weight(1f)
+                    .height(8.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(animatedColor)
-            )
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(animatedProgress)
+                        .clip(RoundedCornerShape(50))
+                        .background(animatedColor)
+                )
+            }
+
+            if (showPercentage) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${(remaining * 100).toInt()}% left",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp
+                    ),
+                    color = animatedColor
+                )
+            }
         }
 
-        if (showPercentage) {
-            Spacer(modifier = Modifier.width(8.dp))
+        if (resetText != null) {
             Text(
-                text = "${(remaining * 100).toInt()}% left",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                ),
-                color = animatedColor
+                text = resetText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+private fun formatResetTime(resetsAt: Instant): String? {
+    val now = Instant.now()
+    if (resetsAt.isBefore(now)) return null
+    val duration = Duration.between(now, resetsAt)
+    val totalMinutes = duration.toMinutes()
+    val hours = duration.toHours()
+    val days = duration.toDays()
+    return when {
+        days >= 1 -> "Resets in ${days}d ${hours % 24}h"
+        hours >= 1 -> "Resets in ${hours}h ${totalMinutes % 60}m"
+        else -> "Resets in ${totalMinutes}m"
     }
 }

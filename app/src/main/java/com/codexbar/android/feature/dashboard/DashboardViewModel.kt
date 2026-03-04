@@ -107,7 +107,8 @@ class DashboardViewModel @Inject constructor(
             windows = quotaInfo.windows.map { window ->
                 UsageWindowUi(
                     label = window.label,
-                    utilization = window.utilization
+                    utilization = window.utilization,
+                    resetsAt = window.resetsAt
                 )
             },
             extraUsage = quotaInfo.extraUsage?.let { extra ->
