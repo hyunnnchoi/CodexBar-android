@@ -132,4 +132,30 @@ class EncryptedPrefsManager @Inject constructor(
     fun setRefreshInterval(minutes: Long) {
         prefs.edit().putLong("refresh_interval_minutes", minutes).apply()
     }
+
+    fun saveResetTimes(service: AiService, windows: List<Pair<String, Instant?>>) {
+        val editor = prefs.edit()
+        windows.forEach { (label, resetsAt) ->
+            val key = "${service.name}_${label}_resets_at"
+            if (resetsAt != null) {
+                editor.putLong(key, resetsAt.epochSecond)
+            } else {
+                editor.remove(key)
+            }
+        }
+        editor.apply()
+    }
+
+    fun loadResetTimes(service: AiService): Map<String, Instant> {
+        val prefix = "${service.name}_"
+        val suffix = "_resets_at"
+        return prefs.all
+            .filter { it.key.startsWith(prefix) && it.key.endsWith(suffix) }
+            .mapNotNull { (key, value) ->
+                val label = key.removePrefix(prefix).removeSuffix(suffix)
+                val epochSecond = (value as? Long)?.takeIf { it > 0 } ?: return@mapNotNull null
+                label to Instant.ofEpochSecond(epochSecond)
+            }
+            .toMap()
+    }
 }
