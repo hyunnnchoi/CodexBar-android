@@ -25,26 +25,37 @@ class QuotaNotificationService @Inject constructor(
 ) {
     companion object {
         const val CHANNEL_ID = "quota_monitor"
+        const val RESET_CHANNEL_ID = "quota_reset_alert"
         const val NOTIFICATION_ID = 1001
+        const val RESET_NOTIFICATION_ID_BASE = 2000
         const val ACTION_REFRESH = "com.codexbar.android.ACTION_REFRESH"
     }
 
     init {
-        createNotificationChannel()
+        createNotificationChannels()
     }
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
+    private fun createNotificationChannels() {
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val monitorChannel = NotificationChannel(
             CHANNEL_ID,
             "AI Quota Monitor",
-            NotificationManager.IMPORTANCE_LOW // No sound
+            NotificationManager.IMPORTANCE_LOW
         ).apply {
             description = "Shows current AI service quota usage"
             setShowBadge(false)
         }
 
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
+        val resetChannel = NotificationChannel(
+            RESET_CHANNEL_ID,
+            "Quota Reset Alerts",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Notifies when AI service quotas have been reset"
+        }
+
+        manager.createNotificationChannels(listOf(monitorChannel, resetChannel))
     }
 
     fun showQuotaNotification(quotas: List<QuotaInfo>) {
@@ -110,6 +121,30 @@ class QuotaNotificationService @Inject constructor(
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(NOTIFICATION_ID, notification)
+    }
+
+    fun showResetNotification(service: AiService, windowLabel: String) {
+        val dashboardIntent = Intent().apply {
+            action = Intent.ACTION_VIEW
+            data = android.net.Uri.parse("codexbar://dashboard")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        val dashboardPendingIntent = PendingIntent.getActivity(
+            context, 0, dashboardIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, RESET_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_quota)
+            .setContentTitle("${service.displayName} quota reset")
+            .setContentText("$windowLabel window has been reset. Your quota is fully available.")
+            .setContentIntent(dashboardPendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationId = RESET_NOTIFICATION_ID_BASE + "${service.name}_$windowLabel".hashCode().and(0xFFFF)
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(notificationId, notification)
     }
 
     private fun formatElapsed(fetchedAt: Instant?): String {
