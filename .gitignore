@@ -1,0 +1,46 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+
+# Gradle files
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Local configuration
+local.properties
+
+# Android Studio
+*.iml
+.idea/
+.DS_Store
+
+# Kotlin
+.kotlin/
+
+# Signing
+*.jks
+*.keystore
+
+# Upstream reference (not part of this project)
+upstream-codexbar/
+
+# Claude workspace
+.claude/
+
+# REQUIREMENTS (dev only)
+REQUIREMENTS.md
