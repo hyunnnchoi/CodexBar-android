@@ -205,6 +205,33 @@ class ClaudeRepositoryImplTest {
     }
 
     @Test
+    fun `fetchQuota extracts tier from JWT access token`() = runTest {
+        // Build a fake JWT: header.payload.signature
+        val payload = java.util.Base64.getUrlEncoder().withoutPadding()
+            .encodeToString("""{"rate_limit_tier":"max","sub":"user"}""".toByteArray())
+        val fakeJwt = "eyJhbGciOiJSUzI1NiJ9.$payload.fake-signature"
+
+        val jwtCredential = Credential.ClaudeCredential(
+            accessToken = fakeJwt,
+            refreshToken = "test-refresh-token"
+        )
+        `when`(prefsManager.loadCredential(AiService.CLAUDE)).thenReturn(jwtCredential)
+
+        val responseJson = """
+        {
+            "five_hour": { "utilization": 20 }
+        }
+        """.trimIndent()
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(responseJson))
+
+        val result = repository.fetchQuota()
+
+        assertTrue(result is Result.Success)
+        assertEquals("Max", (result as Result.Success).value.tier)
+    }
+
+    @Test
     fun `fetchQuota extra_usage null when disabled`() = runTest {
         val responseJson = """
         {

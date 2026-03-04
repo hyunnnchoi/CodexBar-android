@@ -12,6 +12,9 @@ import com.codexbar.android.core.network.claude.ClaudeApiService
 import com.codexbar.android.core.network.claude.ClaudeDto
 import com.codexbar.android.core.network.claude.ClaudeTokenRefreshService
 import com.codexbar.android.core.security.EncryptedPrefsManager
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.IOException
 import java.time.Instant
 import javax.inject.Inject
@@ -37,12 +40,13 @@ class ClaudeRepositoryImpl @Inject constructor(
                 200 -> {
                     val body = response.body()
                         ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                    val headerTier = extractTierFromHeaders(response)
-                    val effectiveTier = headerTier ?: workingCredential.rateLimitTier
-                    if (headerTier != null && headerTier != workingCredential.rateLimitTier) {
+                    val discoveredTier = extractTierFromHeaders(response)
+                        ?: extractTierFromJwt(workingCredential.accessToken)
+                    val effectiveTier = discoveredTier ?: workingCredential.rateLimitTier
+                    if (discoveredTier != null && discoveredTier != workingCredential.rateLimitTier) {
                         prefsManager.saveCredential(
                             AiService.CLAUDE,
-                            workingCredential.copy(rateLimitTier = headerTier)
+                            workingCredential.copy(rateLimitTier = discoveredTier)
                         )
                     }
                     Result.Success(mapToQuotaInfo(body, effectiveTier))
@@ -55,12 +59,13 @@ class ClaudeRepositoryImpl @Inject constructor(
                         if (retryResponse.isSuccessful) {
                             val body = retryResponse.body()
                                 ?: return Result.Failure(AppError.ParseError("Empty response body"))
-                            val headerTier = extractTierFromHeaders(retryResponse)
-                            val effectiveTier = headerTier ?: refreshed.rateLimitTier
-                            if (headerTier != null && headerTier != refreshed.rateLimitTier) {
+                            val discoveredTier = extractTierFromHeaders(retryResponse)
+                                ?: extractTierFromJwt(refreshed.accessToken)
+                            val effectiveTier = discoveredTier ?: refreshed.rateLimitTier
+                            if (discoveredTier != null && discoveredTier != refreshed.rateLimitTier) {
                                 prefsManager.saveCredential(
                                     AiService.CLAUDE,
-                                    refreshed.copy(rateLimitTier = headerTier)
+                                    refreshed.copy(rateLimitTier = discoveredTier)
                                 )
                             }
                             Result.Success(mapToQuotaInfo(body, effectiveTier))
@@ -127,6 +132,22 @@ class ClaudeRepositoryImpl @Inject constructor(
             ?: response.headers()["x-ratelimit-tier"]
             ?: return null
         return raw.trim().replaceFirstChar { it.uppercase() }
+    }
+
+    private fun extractTierFromJwt(accessToken: String): String? {
+        return try {
+            val parts = accessToken.split(".")
+            if (parts.size != 3) return null
+            val payload = String(java.util.Base64.getUrlDecoder().decode(parts[1]))
+            val json = Json { ignoreUnknownKeys = true }
+            val obj = json.parseToJsonElement(payload).jsonObject
+            val tier = obj["rate_limit_tier"]?.jsonPrimitive?.content
+                ?: obj["rateLimitTier"]?.jsonPrimitive?.content
+                ?: return null
+            tier.replaceFirstChar { it.uppercase() }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun mapToQuotaInfo(response: ClaudeDto.OAuthUsageResponse, tier: String? = null): QuotaInfo {
