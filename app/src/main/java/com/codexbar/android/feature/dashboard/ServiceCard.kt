@@ -100,8 +100,8 @@ fun ServiceCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Primary gauge (highest utilization)
-            val primaryWindow = cardData.windows.maxByOrNull { it.utilization }
+            // Primary gauge (first window)
+            val primaryWindow = cardData.windows.firstOrNull()
             primaryWindow?.let { window ->
                 QuotaGaugeBar(
                     utilization = window.utilization,
@@ -111,10 +111,8 @@ fun ServiceCard(
                 )
             }
 
-            // Secondary windows (compact)
-            val secondaryWindows = cardData.windows
-                .filter { it != primaryWindow }
-                .sortedByDescending { it.utilization }
+            // Secondary windows
+            val secondaryWindows = cardData.windows.drop(1)
 
             if (secondaryWindows.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
