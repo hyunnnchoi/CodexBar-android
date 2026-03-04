@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Service 1 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/service_name_1"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@android:color/primary_text_light" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_1"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/progress_text_1"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:gravity="end"
+            android:textColor="@android:color/primary_text_light" />
+    </LinearLayout>
+
+    <!-- Service 2 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/service_name_2"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@android:color/primary_text_light" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_2"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/progress_text_2"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:gravity="end"
+            android:textColor="@android:color/primary_text_light" />
+    </LinearLayout>
+
+    <!-- Service 3 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/service_name_3"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@android:color/primary_text_light" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_3"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/progress_text_3"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:gravity="end"
+            android:textColor="@android:color/primary_text_light" />
+    </LinearLayout>
+
+    <!-- Update time -->
+    <TextView
+        android:id="@+id/update_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@android:color/secondary_text_light"
+        android:gravity="end" />
+
+</LinearLayout>
