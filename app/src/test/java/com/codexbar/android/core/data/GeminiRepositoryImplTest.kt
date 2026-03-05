@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -63,7 +64,7 @@ class GeminiRepositoryImplTest {
             .create(GeminiTokenRefreshService::class.java)
 
         prefsManager = mock(EncryptedPrefsManager::class.java)
-        `when`(prefsManager.loadCredential(AiService.GEMINI)).thenReturn(testCredential)
+        runBlocking { `when`(prefsManager.loadCredential(AiService.GEMINI)).thenReturn(testCredential) }
 
         repository = GeminiRepositoryImpl(apiService, tokenRefreshService, prefsManager)
     }

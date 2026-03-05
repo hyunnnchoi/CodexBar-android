@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -61,7 +62,7 @@ class CodexRepositoryImplTest {
             .create(CodexTokenRefreshService::class.java)
 
         prefsManager = mock(EncryptedPrefsManager::class.java)
-        `when`(prefsManager.loadCredential(AiService.CODEX)).thenReturn(testCredential)
+        runBlocking { `when`(prefsManager.loadCredential(AiService.CODEX)).thenReturn(testCredential) }
 
         repository = CodexRepositoryImpl(apiService, tokenRefreshService, prefsManager)
     }
