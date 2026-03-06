@@ -41,14 +41,19 @@ No backend server — all tokens are processed and stored strictly on-device.
 
 ### Claude (Anthropic)
 
-Claude uses OAuth tokens from Claude Code CLI. Extract from macOS Keychain:
+Claude uses OAuth tokens from Claude Code CLI. Extract both tokens from macOS Keychain:
 
 ```bash
 security find-generic-password -s "Claude Code-credentials" -w \
-  | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['accessToken'])"
+  | python3 -c "
+import sys, json
+d = json.loads(sys.stdin.read())
+print('Access Token:', d['accessToken'])
+print('Refresh Token:', d['refreshToken'])
+"
 ```
 
-Paste the resulting token into the Claude access token field in Settings.
+Paste **both** tokens into the Claude fields in Settings. The refresh token is required — access tokens expire every 8 hours, and the app uses the refresh token to renew them automatically in the background.
 
 ### Codex (OpenAI / ChatGPT)
 
