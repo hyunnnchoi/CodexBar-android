@@ -171,7 +171,10 @@ private fun ServiceCredentialSection(
             OutlinedTextField(
                 value = state.refreshToken,
                 onValueChange = { onFieldChange("refreshToken", it) },
-                label = { Text("Refresh Token${if (service == AiService.CLAUDE) " (optional)" else ""}") },
+                label = { Text("Refresh Token") },
+                supportingText = if (service == AiService.CLAUDE) {
+                    { Text("Required for auto-refresh (tokens expire every 8h)") }
+                } else null,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
