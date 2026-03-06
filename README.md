@@ -118,7 +118,7 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`
 
 - Kotlin 2.1.0, Jetpack Compose, Material 3
 - Hilt (DI), Retrofit2 + OkHttp (networking)
-- WorkManager (background sync), EncryptedSharedPreferences (security)
+- WorkManager (background sync), DataStore + KeyStore value encryption (security)
 - KSP, kotlinx.serialization
 
 ## Acknowledgments

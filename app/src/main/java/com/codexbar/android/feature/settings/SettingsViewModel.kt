@@ -40,7 +40,7 @@ class SettingsViewModel @Inject constructor(
     private val pendingChanges = MutableStateFlow<Pair<AiService, String>?>(null)
 
     init {
-        loadSavedCredentials()
+        viewModelScope.launch { loadSavedCredentials() }
         _uiState.update {
             it.copy(
                 refreshIntervalMinutes = prefsManager.getRefreshInterval(),
@@ -50,7 +50,7 @@ class SettingsViewModel @Inject constructor(
         observePendingChanges()
     }
 
-    private fun loadSavedCredentials() {
+    private suspend fun loadSavedCredentials() {
         for (service in AiService.entries) {
             val credential = prefsManager.loadCredential(service) ?: continue
             val state = when (credential) {
@@ -110,7 +110,7 @@ class SettingsViewModel @Inject constructor(
         pendingChanges.value = service to System.currentTimeMillis().toString()
     }
 
-    private fun saveCredential(service: AiService) {
+    private suspend fun saveCredential(service: AiService) {
         val state = _uiState.value.serviceStates[service] ?: return
         if (state.accessToken.isBlank()) return
 
@@ -149,9 +149,6 @@ class SettingsViewModel @Inject constructor(
             AiService.GEMINI -> geminiRepository
         }
 
-        // Ensure saved before validation
-        saveCredential(service)
-
         _uiState.update { state ->
             val current = state.serviceStates[service] ?: ServiceCredentialState()
             state.copy(
@@ -160,6 +157,7 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            saveCredential(service)
             val result = repo.validateCredential()
             val validationResult = when (result) {
                 is Result.Success -> ValidationResult.Success
@@ -179,12 +177,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setRefreshInterval(minutes: Long) {
-        prefsManager.setRefreshInterval(minutes)
+        viewModelScope.launch { prefsManager.setRefreshInterval(minutes) }
         _uiState.update { it.copy(refreshIntervalMinutes = minutes) }
     }
 
     fun setNotificationsEnabled(enabled: Boolean) {
-        prefsManager.setNotificationsEnabled(enabled)
+        viewModelScope.launch { prefsManager.setNotificationsEnabled(enabled) }
         _uiState.update { it.copy(notificationsEnabled = enabled) }
     }
 
@@ -197,11 +195,13 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun deleteAllCredentials() {
-        prefsManager.deleteAllCredentials()
-        _uiState.update {
-            SettingsUiState(
-                refreshIntervalMinutes = it.refreshIntervalMinutes
-            )
+        viewModelScope.launch {
+            prefsManager.deleteAllCredentials()
+            _uiState.update {
+                SettingsUiState(
+                    refreshIntervalMinutes = it.refreshIntervalMinutes
+                )
+            }
         }
     }
 

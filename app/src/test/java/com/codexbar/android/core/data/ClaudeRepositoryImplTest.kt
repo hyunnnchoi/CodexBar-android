@@ -18,6 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import org.mockito.Mockito.mock
@@ -61,7 +62,7 @@ class ClaudeRepositoryImplTest {
             .create(ClaudeTokenRefreshService::class.java)
 
         prefsManager = mock(EncryptedPrefsManager::class.java)
-        `when`(prefsManager.loadCredential(AiService.CLAUDE)).thenReturn(testCredential)
+        runBlocking { `when`(prefsManager.loadCredential(AiService.CLAUDE)).thenReturn(testCredential) }
 
         repository = ClaudeRepositoryImpl(apiService, tokenRefreshService, prefsManager)
     }

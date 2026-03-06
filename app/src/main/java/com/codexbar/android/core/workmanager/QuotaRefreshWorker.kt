@@ -79,7 +79,7 @@ class QuotaRefreshWorker @AssistedInject constructor(
         }
     }
 
-    private fun checkForResets(quotas: List<QuotaInfo>) {
+    private suspend fun checkForResets(quotas: List<QuotaInfo>) {
         val now = Instant.now()
         for (quota in quotas) {
             val previousResetTimes = prefsManager.loadResetTimes(quota.service)

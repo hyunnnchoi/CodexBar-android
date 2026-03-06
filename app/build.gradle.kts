@@ -107,9 +107,6 @@ dependencies {
     // WorkManager
     implementation(libs.work.runtime.ktx)
 
-    // Security
-    implementation(libs.security.crypto)
-
     // Accompanist
     implementation(libs.accompanist.permissions)
 
