@@ -47,7 +47,7 @@ Claude uses OAuth tokens from Claude Code CLI. Extract both tokens from macOS Ke
 security find-generic-password -s "Claude Code-credentials" -w \
   | python3 -c "
 import sys, json
-d = json.loads(sys.stdin.read())
+d = json.loads(sys.stdin.read())['claudeAiOauth']
 print('Access Token:', d['accessToken'])
 print('Refresh Token:', d['refreshToken'])
 "
