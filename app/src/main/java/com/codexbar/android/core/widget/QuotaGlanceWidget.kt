@@ -3,6 +3,7 @@ package com.codexbar.android.core.widget
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
@@ -52,7 +53,7 @@ class QuotaGlanceWidget : GlanceAppWidget() {
 
         provideContent {
             GlanceTheme {
-                WidgetContent(selectedServices.toList(), widgetPrefs)
+                WidgetContent(selectedServices.toList().sortedBy { it.ordinal }, widgetPrefs)
             }
         }
     }
@@ -65,14 +66,24 @@ class QuotaGlanceWidget : GlanceAppWidget() {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(GlanceTheme.colors.widgetBackground)
+                .cornerRadius(20.dp)
+                .background(ColorProvider(Color(0xB01C1B1F)))
                 .clickable(actionStartActivity<MainActivity>())
-                .padding(12.dp)
+                .padding(16.dp)
         ) {
-            when {
-                services.isEmpty() -> EmptyState()
-                services.size == 1 -> SingleServiceLayout(services.first(), widgetPrefs)
-                else -> MultiServiceLayout(services, widgetPrefs)
+            if (services.isEmpty()) {
+                EmptyState()
+            } else {
+                Column(modifier = GlanceModifier.fillMaxSize()) {
+                    for ((index, service) in services.withIndex()) {
+                        if (index > 0) {
+                            Spacer(modifier = GlanceModifier.height(4.dp))
+                            Divider()
+                            Spacer(modifier = GlanceModifier.height(8.dp))
+                        }
+                        ServiceSection(service, widgetPrefs, showRefresh = index == 0)
+                    }
+                }
             }
         }
     }
@@ -85,184 +96,180 @@ class QuotaGlanceWidget : GlanceAppWidget() {
         ) {
             Text(
                 text = "No services configured",
-                style = TextStyle(
-                    color = GlanceTheme.colors.onSurface,
-                    fontSize = 14.sp
-                )
+                style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)), fontSize = 14.sp)
             )
         }
     }
 
     @Composable
-    private fun SingleServiceLayout(
+    private fun Divider() {
+        Box(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(ColorProvider(Color.White.copy(alpha = 0.1f)))
+        ) {}
+    }
+
+    @Composable
+    private fun ServiceSection(
         service: AiService,
-        widgetPrefs: WidgetPrefsManager
+        widgetPrefs: WidgetPrefsManager,
+        showRefresh: Boolean
     ) {
         val labels = widgetPrefs.getCachedLabels(service)
-        val maxUtil = widgetPrefs.getMaxCachedUtilization(service)
-        val remaining = ((1f - maxUtil) * 100).toInt()
+        val tier = widgetPrefs.getCachedTier(service)
 
-        Column(modifier = GlanceModifier.fillMaxSize()) {
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+            // Header: service name + tier + refresh button
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Service icon dot
+                Box(
+                    modifier = GlanceModifier
+                        .size(10.dp)
+                        .cornerRadius(5.dp)
+                        .background(ColorProvider(Color(service.brandColor)))
+                ) {}
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
+                Text(
+                    text = service.displayName,
+                    style = TextStyle(
+                        color = ColorProvider(Color.White),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+
+                if (tier != null) {
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    Box(
+                        modifier = GlanceModifier
+                            .cornerRadius(4.dp)
+                            .background(ColorProvider(Color.White.copy(alpha = 0.15f)))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = tier,
+                            style = TextStyle(
+                                color = ColorProvider(Color.White.copy(alpha = 0.7f)),
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = GlanceModifier.defaultWeight())
+
+                if (showRefresh) {
+                    Image(
+                        provider = ImageProvider(R.drawable.ic_refresh),
+                        contentDescription = "Refresh",
+                        modifier = GlanceModifier
+                            .size(18.dp)
+                            .clickable(actionRunCallback<RefreshWidgetAction>()),
+                        colorFilter = ColorFilter.tint(ColorProvider(Color.White.copy(alpha = 0.5f)))
+                    )
+                }
+            }
+
+            Spacer(modifier = GlanceModifier.height(8.dp))
+
+            // Each usage window — same layout as app dashboard
+            for ((index, label) in labels.withIndex()) {
+                if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+                WindowRow(service, label, widgetPrefs)
+            }
+
+            // Show placeholder if no cached data yet
+            if (labels.isEmpty()) {
+                Text(
+                    text = "Waiting for data...",
+                    style = TextStyle(
+                        color = ColorProvider(Color.White.copy(alpha = 0.4f)),
+                        fontSize = 12.sp
+                    )
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun WindowRow(
+        service: AiService,
+        label: String,
+        widgetPrefs: WidgetPrefsManager
+    ) {
+        val utilization = widgetPrefs.getCachedUtilization(service, label)
+        val remaining = ((1f - utilization) * 100).toInt()
+        val resetsAt = widgetPrefs.getCachedResetsAt(service, label)
+        val resetText = resetsAt?.let { formatResetTime(it) } ?: ""
+
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+            // Label + percentage
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = service.displayName,
+                    text = label,
                     style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        color = ColorProvider(Color.White.copy(alpha = 0.7f)),
+                        fontSize = 12.sp
                     )
                 )
                 Spacer(modifier = GlanceModifier.defaultWeight())
-                RefreshButton()
+                Text(
+                    text = "${remaining}% left",
+                    style = TextStyle(
+                        color = utilizationColor(utilization),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
             }
 
-            Spacer(modifier = GlanceModifier.height(8.dp))
+            Spacer(modifier = GlanceModifier.height(3.dp))
 
-            Text(
-                text = "${remaining}% left",
-                style = TextStyle(
-                    color = utilizationColor(maxUtil),
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
+            // Progress bar
+            SegmentedProgressBar(utilization)
 
-            Spacer(modifier = GlanceModifier.height(6.dp))
-
-            SegmentedProgressBar(maxUtil)
-
-            Spacer(modifier = GlanceModifier.height(6.dp))
-
-            for (label in labels.take(3)) {
-                val util = widgetPrefs.getCachedUtilization(service, label)
-                val resetsAt = widgetPrefs.getCachedResetsAt(service, label)
-                val resetText = resetsAt?.let { formatResetTime(it) } ?: ""
-                val windowRemaining = ((1f - util) * 100).toInt()
-
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            // Reset time
+            if (resetText.isNotEmpty()) {
+                Spacer(modifier = GlanceModifier.height(2.dp))
+                Row(modifier = GlanceModifier.fillMaxWidth()) {
+                    Spacer(modifier = GlanceModifier.defaultWeight())
                     Text(
-                        text = "$label: ${windowRemaining}%",
+                        text = "Resets in $resetText",
                         style = TextStyle(
-                            color = GlanceTheme.colors.onSurfaceVariant,
-                            fontSize = 12.sp
+                            color = ColorProvider(Color.White.copy(alpha = 0.4f)),
+                            fontSize = 10.sp
                         )
                     )
-                    if (resetText.isNotEmpty()) {
-                        Spacer(modifier = GlanceModifier.defaultWeight())
-                        Text(
-                            text = resetText,
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurfaceVariant,
-                                fontSize = 11.sp
-                            )
-                        )
-                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun MultiServiceLayout(
-        services: List<AiService>,
-        widgetPrefs: WidgetPrefsManager
-    ) {
-        Column(modifier = GlanceModifier.fillMaxSize()) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "CodexBar",
-                    style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                RefreshButton()
-            }
-
-            Spacer(modifier = GlanceModifier.height(6.dp))
-
-            for ((index, service) in services.take(3).withIndex()) {
-                if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
-                ServiceRow(service, widgetPrefs)
-            }
-        }
-    }
-
-    @Composable
-    private fun ServiceRow(service: AiService, widgetPrefs: WidgetPrefsManager) {
-        val maxUtil = widgetPrefs.getMaxCachedUtilization(service)
-        val remaining = ((1f - maxUtil) * 100).toInt()
-
-        Column(modifier = GlanceModifier.fillMaxWidth()) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = service.displayName,
-                    style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                Text(
-                    text = "${remaining}%",
-                    style = TextStyle(
-                        color = utilizationColor(maxUtil),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-            Spacer(modifier = GlanceModifier.height(3.dp))
-            SegmentedProgressBar(maxUtil)
-        }
-    }
-
-    @Composable
-    private fun RefreshButton() {
-        Image(
-            provider = ImageProvider(R.drawable.ic_refresh),
-            contentDescription = "Refresh",
-            modifier = GlanceModifier
-                .size(20.dp)
-                .clickable(actionRunCallback<RefreshWidgetAction>()),
-            colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurfaceVariant)
-        )
-    }
-
-    /**
-     * Segmented progress bar: 20 segments, filled count based on remaining (1 - utilization).
-     */
-    @Composable
     private fun SegmentedProgressBar(utilization: Float) {
-        val totalSegments = 20
+        val totalSegments = 24
         val filledSegments = ((1f - utilization) * totalSegments).roundToInt().coerceIn(0, totalSegments)
         val fillColor = utilizationColor(utilization)
-        val trackColor = ColorProvider(androidx.compose.ui.graphics.Color(0xFFE0E0E0))
+        val trackColor = ColorProvider(Color.White.copy(alpha = 0.1f))
 
         Row(
-            modifier = GlanceModifier.fillMaxWidth().height(6.dp)
+            modifier = GlanceModifier.fillMaxWidth().height(4.dp)
         ) {
             for (i in 0 until totalSegments) {
                 val color = if (i < filledSegments) fillColor else trackColor
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
-                        .height(6.dp)
+                        .height(4.dp)
                         .background(color)
                 ) {}
                 if (i < totalSegments - 1) {
@@ -275,9 +282,9 @@ class QuotaGlanceWidget : GlanceAppWidget() {
     companion object {
         fun utilizationColor(utilization: Float): ColorProvider {
             val color = when {
-                utilization >= 0.85f -> androidx.compose.ui.graphics.Color(0xFFD32F2F)
-                utilization >= 0.60f -> androidx.compose.ui.graphics.Color(0xFFF57F17)
-                else -> androidx.compose.ui.graphics.Color(0xFF388E3C)
+                utilization >= 0.85f -> Color(0xFFEF5350)
+                utilization >= 0.60f -> Color(0xFFFFB74D)
+                else -> Color(0xFF81C784)
             }
             return ColorProvider(color)
         }
@@ -290,8 +297,8 @@ class QuotaGlanceWidget : GlanceAppWidget() {
             val hours = duration.toHours()
             val minutes = duration.toMinutes() % 60
             return when {
-                hours >= 24 -> "${hours / 24}d${hours % 24}h"
-                hours > 0 -> "${hours}h${minutes}m"
+                hours >= 24 -> "${hours / 24}d ${hours % 24}h"
+                hours > 0 -> "${hours}h ${minutes}m"
                 else -> "${minutes}m"
             }
         }

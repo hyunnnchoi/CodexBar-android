@@ -103,6 +103,7 @@ class QuotaRefreshWorker @AssistedInject constructor(
                 )
             }
             widgetPrefsManager.cacheAllQuotaData(quota.service, windows)
+            widgetPrefsManager.cacheTier(quota.service, quota.tier)
         }
     }
 

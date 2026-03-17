@@ -101,4 +101,17 @@ class WidgetPrefsManager @Inject constructor(
         if (labels.isEmpty()) return 0f
         return labels.maxOf { getCachedUtilization(service, it) }
     }
+
+    fun cacheTier(service: AiService, tier: String?) {
+        val key = "cache_${service.name}_tier"
+        if (tier != null) {
+            prefs.edit().putString(key, tier).apply()
+        } else {
+            prefs.edit().remove(key).apply()
+        }
+    }
+
+    fun getCachedTier(service: AiService): String? {
+        return prefs.getString("cache_${service.name}_tier", null)
+    }
 }
