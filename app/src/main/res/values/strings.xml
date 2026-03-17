@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">CodexBar</string>
     <string name="tile_label">CodexBar</string>
+    <string name="widget_description">Monitor AI service quota usage at a glance</string>
 </resources>

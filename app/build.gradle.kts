@@ -110,6 +110,10 @@ dependencies {
     // Security
     implementation(libs.security.crypto)
 
+    // Glance (AppWidget)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
+
     // Accompanist
     implementation(libs.accompanist.permissions)
 
