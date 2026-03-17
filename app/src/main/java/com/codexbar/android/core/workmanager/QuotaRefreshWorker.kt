@@ -14,11 +14,16 @@ import com.codexbar.android.core.domain.repository.QuotaRepository
 import com.codexbar.android.core.notification.QuotaNotificationService
 import com.codexbar.android.core.security.EncryptedPrefsManager
 import com.codexbar.android.core.tile.QuotaTileService
+import com.codexbar.android.core.widget.QuotaGlanceWidget
+import com.codexbar.android.core.widget.QuotaWidgetReceiver
+import com.codexbar.android.core.widget.WidgetPrefsManager
 import com.codexbar.android.di.ClaudeRepository
 import com.codexbar.android.di.CodexRepository
 import com.codexbar.android.di.GeminiRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -32,7 +37,8 @@ class QuotaRefreshWorker @AssistedInject constructor(
     @CodexRepository private val codexRepository: QuotaRepository,
     @GeminiRepository private val geminiRepository: QuotaRepository,
     private val prefsManager: EncryptedPrefsManager,
-    private val notificationService: QuotaNotificationService
+    private val notificationService: QuotaNotificationService,
+    private val widgetPrefsManager: WidgetPrefsManager
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -58,9 +64,17 @@ class QuotaRefreshWorker @AssistedInject constructor(
                 }
             }
 
-            if (successfulQuotas.isNotEmpty() && prefsManager.isNotificationsEnabled()) {
-                notificationService.showQuotaNotification(successfulQuotas)
-                checkForResets(successfulQuotas)
+            if (successfulQuotas.isNotEmpty()) {
+                // Cache quota data for widgets
+                cacheQuotaData(successfulQuotas)
+
+                if (prefsManager.isNotificationsEnabled()) {
+                    notificationService.showQuotaNotification(successfulQuotas)
+                    checkForResets(successfulQuotas)
+                }
+
+                // Update all widgets
+                QuotaGlanceWidget().updateAll(applicationContext)
             }
 
             // Request tile update
@@ -76,6 +90,19 @@ class QuotaRefreshWorker @AssistedInject constructor(
             }
         } catch (_: Exception) {
             Result.retry()
+        }
+    }
+
+    private fun cacheQuotaData(quotas: List<QuotaInfo>) {
+        for (quota in quotas) {
+            val windows = quota.windows.map { window ->
+                Triple(
+                    window.label,
+                    window.utilization,
+                    window.resetsAt?.epochSecond
+                )
+            }
+            widgetPrefsManager.cacheAllQuotaData(quota.service, windows)
         }
     }
 
