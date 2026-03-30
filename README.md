@@ -1,3 +1,5 @@
+> **⚠️ Known Issue:** Claude's refresh token is consistently failing to renew. Investigating workarounds.
+
 # CodexBar for Android
 
 > Android port of [**CodexBar**](https://github.com/steipete/CodexBar) by [@steipete](https://github.com/steipete) — the macOS menu bar app for monitoring AI service quotas.
